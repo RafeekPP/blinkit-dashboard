@@ -142,7 +142,7 @@ with st.sidebar:
     st.divider()
     if st.button("Reset filters", type="secondary", use_container_width=True):
         st.session_state.clear()
-        st.experimental_rerun()
+        st.rerun()
 
 # =============================================================================
 # Apply Filters
