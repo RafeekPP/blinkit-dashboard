@@ -32,19 +32,21 @@ except Exception:
     session = None
 
 
-def _get_connection():
-    """Get a Snowflake connection, passing secrets explicitly as kwargs."""
-    sf_secrets = dict(st.secrets.get("connections", {}).get("snowflake", {}))
-    if sf_secrets:
-        return st.connection("snowflake", type="snowflake", **sf_secrets)
-    return st.connection("snowflake")
-
-
 def run_query(sql: str) -> pd.DataFrame:
     """Run a SQL query using the appropriate connection method."""
     if IS_LOCAL:
-        conn = _get_connection()
-        return conn.query(sql)
+        import snowflake.connector
+        cfg = st.secrets["connections"]["snowflake"]
+        conn = snowflake.connector.connect(
+            account=cfg["account"],
+            user=cfg["user"],
+            password=cfg["password"],
+            warehouse=cfg.get("warehouse"),
+            database=cfg.get("database"),
+            schema=cfg.get("schema"),
+            role=cfg.get("role"),
+        )
+        return pd.read_sql(sql, conn)
     else:
         return session.sql(sql).to_pandas()
 
